@@ -2,7 +2,10 @@
 
 <h2>Quản lý hàng hóa</h2>
 
-<table class="table table-bordered table-hover">
+@* Token chống giả mạo request, gửi kèm trong request AJAX *@
+@Html.AntiForgeryToken()
+
+<table class="table table-bordered table-hover" id="productTable">
     <thead class="table-light">
         <tr>
             <th>STT</th>
@@ -16,20 +19,89 @@
         @{ int stt = 1; }
         @foreach (var item in Model)
         {
-            <tr>
-                <td>@stt</td>
+            <tr id="row-@item.ProductID">
+                <td class="stt">@stt</td>
                 <td>@item.ProductName</td>
                 <td>@item.ProductPrice.ToString("N0") VND</td>
                 <td>@item.Description</td>
                 <td>
-                    <a asp-action="DeleteProduct" asp-route-id="@item.ProductID"
-                       class="text-danger"
-                       onclick="return confirm('Bạn có chắc muốn xóa sản phẩm này?');">
+                    <a href="#" class="text-danger btn-delete"
+                       data-id="@item.ProductID"
+                       onclick="deleteProduct(this); return false;">
                         🗑 Xóa
                     </a>
                 </td>
             </tr>
             stt++;
         }
+        <tr id="emptyRow" style="@(Model.Any() ? "display:none" : "")">
+            <td colspan="5" class="text-center text-muted">Không có mặt hàng nào</td>
+        </tr>
     </tbody>
 </table>
+
+<style>
+    /* Hiệu ứng khi xóa hàng: tô đỏ rồi mờ dần, thu gọn */
+    #productTable tr.row-deleting td {
+        background-color: #f8d7da;
+        transition: opacity 0.6s ease, background-color 0.3s ease;
+        opacity: 0;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        function deleteProduct(link) {
+            // b1: Hỏi xác nhận, chỉ xóa khi người dùng bấm OK
+            if (!confirm("Có chắc chắn xóa không?")) {
+                return;
+            }
+
+            var id = link.getAttribute("data-id");
+            var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            // b2: Dùng XMLHttpRequest gửi request tới Action xử lý xóa trên Controller
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "@Url.Action("DeleteProductAjax", "Product")/" + id, true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.setRequestHeader("RequestVerificationToken", token);
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState !== 4) return;
+
+                var result = null;
+                try { result = JSON.parse(xhr.responseText); } catch (e) { }
+
+                // b3: Server xóa thành công -> xóa hàng tương ứng trong table bằng script phía client
+                if (xhr.status === 200 && result && result.success) {
+                    removeRow(id);
+                } else {
+                    alert(result && result.message ? result.message : "Xóa thất bại, vui lòng thử lại!");
+                }
+            };
+
+            xhr.send("__RequestVerificationToken=" + encodeURIComponent(token));
+        }
+
+        function removeRow(id) {
+            var row = document.getElementById("row-" + id);
+            if (!row) return;
+
+            // Hiệu ứng CSS rồi mới xóa khỏi DOM
+            row.classList.add("row-deleting");
+            setTimeout(function () {
+                row.parentNode.removeChild(row);
+                renumberRows();
+            }, 600);
+        }
+
+        // Đánh lại số thứ tự sau khi xóa
+        function renumberRows() {
+            var cells = document.querySelectorAll("#productTable tbody td.stt");
+            for (var i = 0; i < cells.length; i++) {
+                cells[i].textContent = i + 1;
+            }
+            document.getElementById("emptyRow").style.display = cells.length === 0 ? "" : "none";
+        }
+    </script>
+}

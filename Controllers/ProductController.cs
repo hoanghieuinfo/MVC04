@@ -54,6 +54,28 @@ namespace MVC04.Controllers
             _repository.Delete(id);
             return RedirectToAction("ProductMgr");
         }
+
+        // POST: /Product/DeleteProductAjax/5  (Bài 5.1 - xóa bằng AJAX)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteProductAjax(int id)
+        {
+            var product = _repository.GetById(id);
+            if (product == null)
+            {
+                return NotFound(new { success = false, message = "Không tìm thấy mặt hàng cần xóa" });
+            }
+
+            try
+            {
+                _repository.Delete(id);
+                return Json(new { success = true, message = "Xóa mặt hàng thành công" });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { success = false, message = "Xóa mặt hàng thất bại" });
+            }
+        }
         // GET: /Product/ProductList
 public IActionResult ProductList()
 {
