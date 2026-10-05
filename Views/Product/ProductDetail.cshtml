@@ -1,0 +1,19 @@
+@model MVC04.Models.Product
+
+<h2>Chi tiết sản phẩm</h2>
+
+<div class="row">
+    <div class="col-md-5">
+        <img src="~/images/@Model.ImageURL" alt="@Model.ProductName"
+             style="width:100%; max-width:350px;"
+             onerror="this.src='https://via.placeholder.com/350'" />
+    </div>
+    <div class="col-md-7">
+        <h3>@Model.ProductName</h3>
+        <p><strong>Mã sản phẩm:</strong> @Model.ProductID</p>
+        <p><strong>Giá:</strong> @Model.ProductPrice.ToString("N0") VND</p>
+        <p><strong>Mô tả:</strong> @Model.Description</p>
+        <button class="btn btn-primary">Add To Cart</button>
+        <a asp-action="ProductList" class="btn btn-secondary">&larr; Quay lại danh sách</a>
+    </div>
+</div>

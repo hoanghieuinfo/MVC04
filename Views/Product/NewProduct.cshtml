@@ -1,0 +1,42 @@
+@model MVC04.Models.Product
+
+<h2>Thêm mới sản phẩm</h2>
+
+@if (ViewBag.SuccessMessage != null)
+{
+    <div class="alert alert-success">@ViewBag.SuccessMessage</div>
+}
+
+<form asp-action="NewProduct" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="ProductName" class="form-label">Tên mặt hàng</label>
+        <input asp-for="ProductName" class="form-control" />
+        <span asp-validation-for="ProductName" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ImageURL" class="form-label">URL ảnh (PNG)</label>
+        <input asp-for="ImageURL" class="form-control" />
+        <span asp-validation-for="ImageURL" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ProductPrice" class="form-label">Đơn giá</label>
+        <input asp-for="ProductPrice" class="form-control" />
+        <span asp-validation-for="ProductPrice" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Description" class="form-label">Mô tả</label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Thêm sản phẩm</button>
+</form>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}
